@@ -27,11 +27,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onUnmounted } from 'vue'
 import { MESSAGE_TYPES } from '@/constants/messageTypes'
 import { CONFIG } from '@/config/constants'
 import type { FeedbackMessage } from '@/types/iot'
 import { createFeedbackMessage } from '@/utils/feedbackHelpers'
+import { useDebouncedFn } from '@/composables/useDebounce'
 
 // Components
 import DashboardHeader from './DashboardHeader.vue'
@@ -61,16 +62,23 @@ const currentMessageType = computed(() =>
   MESSAGE_TYPES.find(mt => mt.id === selectedMessageType.value)
 )
 
+// Debounced form update to improve performance
+const debouncedSetFormData = useDebouncedFn(setFormData, 300)
+
 // Methods
 const setSelectedMessageType = (id: string) => {
   selectedMessageType.value = id
 }
 
 const handleFieldChange = (fieldName: string, value: any) => {
-  setFormData({
+  const newFormData = {
     ...formData.value,
     [fieldName]: value
-  })
+  }
+  // Update local state immediately for UI responsiveness
+  formData.value = newFormData
+  // Debounce localStorage update
+  debouncedSetFormData(newFormData)
 }
 
 const handleSuccessResponse = (response: any) => {
@@ -93,32 +101,8 @@ const handleSendMessage = async () => {
   if (!currentMessageType.value) return
   await sendMessage(currentMessageType.value, formData.value)
 }
-</script>
 
-<style scoped>
-.dashboard-container {
-  min-height: 100vh;
-  background-color: hsl(var(--background));
-  padding: 1.5rem;
-}
-
-.dashboard-content {
-  max-width: 80rem;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.5rem;
-}
-
-@media (min-width: 1024px) {
-  .dashboard-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-}
-</style>
+// Cleanup on unmount
+onUnmounted(() => {
+  // Any cleanup if needed
+})

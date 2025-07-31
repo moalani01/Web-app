@@ -1,4 +1,4 @@
-import { ref, reactive } from 'vue'
+import { reactive, readonly } from 'vue'
 import type { Toast } from '@/types/iot'
 
 const TOAST_LIMIT = 1
@@ -8,6 +8,7 @@ interface ToastState {
   toasts: Toast[]
 }
 
+// Global state outside of composable to ensure it's shared
 const state = reactive<ToastState>({
   toasts: []
 })
@@ -43,7 +44,8 @@ export function useToast() {
     
     const newToast: Toast = {
       ...options,
-      id
+      id,
+      duration: options.duration || TOAST_REMOVE_DELAY
     }
 
     state.toasts = [newToast, ...state.toasts].slice(0, TOAST_LIMIT)
@@ -51,20 +53,35 @@ export function useToast() {
 
     return {
       id,
-      dismiss: () => removeToast(id)
+      dismiss: () => {
+        const timeout = toastTimeouts.get(id)
+        if (timeout) {
+          clearTimeout(timeout)
+          toastTimeouts.delete(id)
+        }
+        removeToast(id)
+      }
     }
   }
 
   const dismiss = (toastId?: string) => {
     if (toastId) {
+      const timeout = toastTimeouts.get(toastId)
+      if (timeout) {
+        clearTimeout(timeout)
+        toastTimeouts.delete(toastId)
+      }
       removeToast(toastId)
     } else {
+      // Clear all timeouts
+      toastTimeouts.forEach((timeout) => clearTimeout(timeout))
+      toastTimeouts.clear()
       state.toasts = []
     }
   }
 
   return {
-    toasts: state.toasts,
+    toasts: readonly(state.toasts),
     toast,
     dismiss
   }

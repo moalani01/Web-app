@@ -3,23 +3,38 @@
     <button
       class="select-trigger"
       :disabled="disabled"
+      :aria-expanded="isOpen"
+      :aria-haspopup="true"
+      :aria-label="placeholder"
       @click="toggleDropdown"
+      @keydown="handleKeyDown"
       @blur="handleBlur"
     >
       <span>{{ displayValue }}</span>
-      <svg class="select-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <svg class="select-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
         <polyline points="6 9 12 15 18 9"></polyline>
       </svg>
     </button>
     
-    <div v-if="isOpen" class="select-dropdown">
+    <div 
+      v-if="isOpen" 
+      class="select-dropdown"
+      role="listbox"
+      :aria-label="placeholder"
+    >
       <div
-        v-for="option in options"
+        v-for="(option, index) in options"
         :key="option"
         class="select-option"
-        :class="{ 'select-option-selected': option === value }"
+        :class="{ 
+          'select-option-selected': option === value,
+          'select-option-focused': index === focusedIndex
+        }"
+        role="option"
+        :aria-selected="option === value"
         @mousedown.prevent
         @click="selectOption(option)"
+        @mouseenter="focusedIndex = index"
       >
         {{ option }}
       </div>
@@ -28,7 +43,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 
 interface Props {
   value?: string
@@ -49,6 +64,7 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<Emits>()
 
 const isOpen = ref(false)
+const focusedIndex = ref(-1)
 
 const displayValue = computed(() => 
   props.value || props.placeholder
@@ -57,6 +73,9 @@ const displayValue = computed(() =>
 const toggleDropdown = () => {
   if (!props.disabled) {
     isOpen.value = !isOpen.value
+    if (isOpen.value) {
+      focusedIndex.value = Math.max(0, props.options.indexOf(props.value || ''))
+    }
   }
 }
 
@@ -64,13 +83,68 @@ const handleBlur = () => {
   // Delay to allow click on option
   setTimeout(() => {
     isOpen.value = false
+    focusedIndex.value = -1
   }, 200)
 }
 
 const selectOption = (option: string) => {
   emit('update:value', option)
   isOpen.value = false
+  focusedIndex.value = -1
 }
+
+const handleKeyDown = (event: KeyboardEvent) => {
+  if (props.disabled) return
+
+  switch (event.key) {
+    case 'Enter':
+    case ' ':
+      event.preventDefault()
+      if (isOpen.value && focusedIndex.value >= 0) {
+        selectOption(props.options[focusedIndex.value])
+      } else {
+        toggleDropdown()
+      }
+      break
+    case 'ArrowDown':
+      event.preventDefault()
+      if (!isOpen.value) {
+        isOpen.value = true
+        focusedIndex.value = 0
+      } else {
+        focusedIndex.value = Math.min(focusedIndex.value + 1, props.options.length - 1)
+      }
+      break
+    case 'ArrowUp':
+      event.preventDefault()
+      if (isOpen.value) {
+        focusedIndex.value = Math.max(focusedIndex.value - 1, 0)
+      }
+      break
+    case 'Escape':
+      event.preventDefault()
+      isOpen.value = false
+      focusedIndex.value = -1
+      break
+    case 'Home':
+      event.preventDefault()
+      if (isOpen.value) {
+        focusedIndex.value = 0
+      }
+      break
+    case 'End':
+      event.preventDefault()
+      if (isOpen.value) {
+        focusedIndex.value = props.options.length - 1
+      }
+      break
+  }
+}
+
+// Reset focused index when options change
+watch(() => props.options, () => {
+  focusedIndex.value = -1
+})
 </script>
 
 <style scoped>
@@ -113,7 +187,8 @@ const selectOption = (option: string) => {
   transition: var(--transition-smooth);
 }
 
-.select-option:hover {
+.select-option:hover,
+.select-option-focused {
   background-color: hsl(var(--accent));
   color: hsl(var(--accent-foreground));
 }
@@ -121,5 +196,6 @@ const selectOption = (option: string) => {
 .select-option-selected {
   background-color: hsl(var(--accent));
   color: hsl(var(--accent-foreground));
+  font-weight: 500;
 }
 </style>

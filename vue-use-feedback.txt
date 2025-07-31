@@ -4,10 +4,10 @@ import { CONFIG } from '@/config/constants'
 import { limitFeedbackMessages } from '@/utils/feedbackHelpers'
 
 export interface UseFeedbackReturn {
-  messages: FeedbackMessage[]
+  messages: import('vue').Ref<FeedbackMessage[]>
   addMessage: (message: FeedbackMessage) => void
   clearMessages: () => void
-  messageCount: number
+  messageCount: import('vue').ComputedRef<number>
 }
 
 export function useFeedback(): UseFeedbackReturn {
@@ -27,9 +27,9 @@ export function useFeedback(): UseFeedbackReturn {
   const messageCount = computed(() => messages.value.length)
 
   return {
-    messages: messages.value,
+    messages,
     addMessage,
     clearMessages,
-    messageCount: messageCount.value
+    messageCount
   }
 }

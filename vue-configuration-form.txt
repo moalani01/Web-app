@@ -12,13 +12,14 @@
             <div class="form-fields">
               <div v-for="field in currentMessageType.fields" :key="field.name" class="field-container">
                 <div class="field-header">
-                  <label class="field-label">
+                  <label class="field-label" :for="`field-${field.name}`">
                     <span class="label-text">{{ field.label }}</span>
                     <span v-if="field.required" class="required-mark">*</span>
                   </label>
                   <component
                     v-if="field.type === 'boolean'"
                     :is="getFieldComponent(field)"
+                    :id="`field-${field.name}`"
                     :value="formData[field.name] ?? field.defaultValue"
                     @update:value="updateField(field.name, $event)"
                     v-bind="getFieldProps(field)"
@@ -27,6 +28,7 @@
                 <component
                   v-if="field.type !== 'boolean'"
                   :is="getFieldComponent(field)"
+                  :id="`field-${field.name}`"
                   :value="formData[field.name] ?? field.defaultValue"
                   @update:value="updateField(field.name, $event)"
                   v-bind="getFieldProps(field)"
@@ -39,14 +41,15 @@
         <div class="form-footer">
           <BaseButton 
             @click="$emit('send-message')"
-            :disabled="!isConnected"
+            :disabled="!isConnected || isSending"
             class="send-button"
           >
-            <svg class="icon-send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <LoadingSpinner v-if="isSending" size="sm" color="currentColor" />
+            <svg v-else class="icon-send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <line x1="22" y1="2" x2="11" y2="13"></line>
               <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
             </svg>
-            Send Configuration
+            {{ isSending ? 'Sending...' : 'Send Configuration' }}
           </BaseButton>
         </div>
       </div>
@@ -58,7 +61,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref } from 'vue'
 import type { MessageType, MessageField } from '@/types/iot'
 import BaseCard from '@/components/common/BaseCard.vue'
 import BaseButton from '@/components/common/BaseButton.vue'
@@ -67,6 +70,7 @@ import BaseInput from '@/components/common/BaseInput.vue'
 import BaseSelect from '@/components/common/BaseSelect.vue'
 import BaseSwitch from '@/components/common/BaseSwitch.vue'
 import BaseRadioGroup from '@/components/common/BaseRadioGroup.vue'
+import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 
 interface Props {
   currentMessageType?: MessageType
@@ -81,6 +85,8 @@ interface Emits {
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
+
+const isSending = ref(false)
 
 const getFieldComponent = (field: MessageField) => {
   switch (field.type) {
@@ -100,7 +106,9 @@ const getFieldComponent = (field: MessageField) => {
 
 const getFieldProps = (field: MessageField) => {
   const baseProps: any = {
-    placeholder: `Enter ${field.label.toLowerCase()}`
+    placeholder: `Enter ${field.label.toLowerCase()}`,
+    'aria-label': field.label,
+    'aria-required': field.required
   }
 
   switch (field.type) {
@@ -121,6 +129,13 @@ const getFieldProps = (field: MessageField) => {
 const updateField = (fieldName: string, value: any) => {
   emit('field-change', fieldName, value)
 }
+
+// Expose sending state management
+defineExpose({
+  setSending: (value: boolean) => {
+    isSending.value = value
+  }
+})
 </script>
 
 <style scoped>

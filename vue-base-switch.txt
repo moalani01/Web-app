@@ -1,0 +1,40 @@
+<template>
+  <button
+    role="switch"
+    :aria-checked="value"
+    :data-state="value ? 'checked' : 'unchecked'"
+    :disabled="disabled"
+    class="switch"
+    @click="toggle"
+  >
+    <span class="switch-thumb" />
+  </button>
+</template>
+
+<script setup lang="ts">
+interface Props {
+  value?: boolean
+  disabled?: boolean
+}
+
+interface Emits {
+  (e: 'update:value', value: boolean): void
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  value: false,
+  disabled: false
+})
+
+const emit = defineEmits<Emits>()
+
+const toggle = () => {
+  if (!props.disabled) {
+    emit('update:value', !props.value)
+  }
+}
+</script>
+
+<style scoped>
+/* Styles are in components.css */
+</style>

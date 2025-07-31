@@ -1,0 +1,110 @@
+<template>
+  <div class="header-container">
+    <div class="header-content">
+      <div class="header-icon">
+        <svg class="icon-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M12 1v6m0 6v6m0-6v6"></path>
+          <path d="M20.49 7.52l-5.19 3-5.19-3m10.38 0l-5.19 3m5.19-3l-5.19 3"></path>
+          <path d="M20.49 16.48l-5.19-3-5.19 3m10.38 0l-5.19-3m5.19 3l-5.19-3"></path>
+          <path d="M3.51 7.52l5.19 3 5.19-3m-10.38 0l5.19 3m-5.19-3l5.19 3"></path>
+          <path d="M3.51 16.48l5.19-3 5.19 3m-10.38 0l5.19-3m-5.19 3l5.19-3"></path>
+        </svg>
+      </div>
+      <div class="header-text">
+        <h1 class="header-title">IoT Device Configuration</h1>
+        <p class="header-subtitle">Configure and manage your IoT device settings</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="connection-status">
+        <svg class="icon-activity" :class="{ 'icon-connected': isConnected, 'icon-disconnected': !isConnected }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+        </svg>
+        <BaseBadge :variant="isConnected ? 'default' : 'destructive'">
+          {{ isConnected ? 'Connected' : 'Disconnected' }}
+        </BaseBadge>
+      </div>
+      <ThemeToggle />
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import BaseBadge from '@/components/common/BaseBadge.vue'
+import ThemeToggle from '@/components/common/ThemeToggle.vue'
+
+interface Props {
+  isConnected: boolean
+}
+
+defineProps<Props>()
+</script>
+
+<style scoped>
+.header-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.header-icon {
+  flex-shrink: 0;
+}
+
+.icon-settings {
+  width: 2rem;
+  height: 2rem;
+  color: hsl(var(--primary));
+}
+
+.header-text {
+  min-width: 0;
+}
+
+.header-title {
+  font-size: 1.875rem;
+  font-weight: bold;
+  color: hsl(var(--foreground));
+  word-break: break-word;
+}
+
+.header-subtitle {
+  color: hsl(var(--muted-foreground));
+  word-break: break-word;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.connection-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.icon-activity {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.icon-connected {
+  color: hsl(var(--success));
+}
+
+.icon-disconnected {
+  color: hsl(var(--destructive));
+}
+</style>

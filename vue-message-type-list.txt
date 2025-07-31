@@ -1,0 +1,66 @@
+<template>
+  <BaseCard class="message-type-card">
+    <template #header>
+      <h2 class="card-title">Message Types</h2>
+    </template>
+    <template #content>
+      <BaseScrollArea>
+        <div class="message-type-list">
+          <MessageTypeCard
+            v-for="messageType in messageTypes"
+            :key="messageType.id"
+            :message-type="messageType"
+            :is-selected="selectedMessageType === messageType.id"
+            :is-expanded="isExpanded(messageType.id)"
+            @select="$emit('select-message-type', messageType.id)"
+            @toggle-expand="toggleExpansion(messageType.id)"
+          />
+        </div>
+      </BaseScrollArea>
+    </template>
+  </BaseCard>
+</template>
+
+<script setup lang="ts">
+import type { MessageType } from '@/types/iot'
+import BaseCard from '@/components/common/BaseCard.vue'
+import BaseScrollArea from '@/components/common/BaseScrollArea.vue'
+import MessageTypeCard from './MessageTypeCard.vue'
+import { useExpandable } from '@/composables/useExpandable'
+
+interface Props {
+  messageTypes: MessageType[]
+  selectedMessageType: string
+}
+
+interface Emits {
+  (e: 'select-message-type', id: string): void
+}
+
+defineProps<Props>()
+defineEmits<Emits>()
+
+const { isExpanded, toggleExpansion } = useExpandable()
+</script>
+
+<style scoped>
+.message-type-card {
+  height: 600px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.message-type-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 1024px) {
+  .message-type-card {
+    grid-column: span 1;
+  }
+}
+</style>

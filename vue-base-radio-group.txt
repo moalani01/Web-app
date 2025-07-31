@@ -1,0 +1,56 @@
+<template>
+  <div class="radio-group" role="radiogroup">
+    <div v-for="option in options" :key="option" class="radio-item-container">
+      <button
+        :id="`radio-${option}`"
+        role="radio"
+        :aria-checked="value === option"
+        :data-state="value === option ? 'checked' : 'unchecked'"
+        class="radio-item"
+        @click="selectOption(option)"
+      >
+        <span v-if="value === option" class="radio-indicator" />
+      </button>
+      <label :for="`radio-${option}`" class="radio-label">
+        {{ option }}
+      </label>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+interface Props {
+  value?: string
+  options: string[]
+}
+
+interface Emits {
+  (e: 'update:value', value: string): void
+}
+
+const props = defineProps<Props>()
+const emit = defineEmits<Emits>()
+
+const selectOption = (option: string) => {
+  emit('update:value', option)
+}
+</script>
+
+<style scoped>
+.radio-group {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.radio-item-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.radio-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+</style>

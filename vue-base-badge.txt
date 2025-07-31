@@ -1,0 +1,46 @@
+<template>
+  <div :class="badgeClasses">
+    <slot />
+  </div>
+</template>
+
+<script setup lang="ts">
+import { computed } from 'vue'
+
+interface Props {
+  variant?: 'default' | 'destructive' | 'outline' | 'secondary'
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  variant: 'default'
+})
+
+const badgeClasses = computed(() => {
+  const classes = ['badge']
+  
+  if (props.variant === 'default') {
+    classes.push('badge-default')
+  } else if (props.variant === 'destructive') {
+    classes.push('badge-destructive')
+  } else if (props.variant === 'outline') {
+    classes.push('badge-outline')
+  } else if (props.variant === 'secondary') {
+    classes.push('badge-secondary')
+  }
+  
+  return classes.join(' ')
+})
+</script>
+
+<style scoped>
+.badge-outline {
+  background-color: transparent;
+  color: hsl(var(--foreground));
+  border-color: hsl(var(--border));
+}
+
+.badge-secondary {
+  background-color: hsl(var(--secondary));
+  color: hsl(var(--secondary-foreground));
+}
+</style>

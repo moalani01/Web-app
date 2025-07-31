@@ -1,0 +1,90 @@
+/* Theme variables */
+:root {
+  --background: 0 0% 100%;
+  --foreground: 0 0% 3.9%;
+
+  --card: 0 0% 91%;
+  --card-foreground: 0 0% 3.9%;
+
+  --popover: 0 0% 90%;
+  --popover-foreground: 0 0% 3.9%;
+
+  --primary: 0 0% 9%;
+  --primary-foreground: 0 0% 98%;
+  --primary-glow: 0 0% 20%;
+
+  --secondary: 0 0% 89%;
+  --secondary-foreground: 0 0% 9%;
+
+  --muted: 0 0% 89%;
+  --muted-foreground: 0 0% 45.1%;
+
+  --accent: 0 0% 96.1%;
+  --accent-foreground: 0 0% 9%;
+
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 0 0% 9%;
+
+  --border: 0 0% 80%;
+  --input: 0 0% 95%;
+  --ring: 0 0% 3.9%;
+
+  --success: 142 76% 36%;
+  --success-foreground: 0 0% 9%;
+  --warning: 38 92% 50%;
+  --warning-foreground: 20 14.3% 4.1%;
+  --info: 199 89% 48%;
+  --info-foreground: 0 0% 9%;
+
+  --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
+  --gradient-card: linear-gradient(145deg, hsl(0 0% 98%), hsl(0 0% 96%));
+  --shadow-glow: 0 0 20px hsl(var(--primary) / 0.3);
+  --shadow-card: 0 4px 6px -1px hsl(0 0% 0% / 0.1), 0 2px 4px -1px hsl(0 0% 0% / 0.06);
+  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  --radius: 0.5rem;
+}
+
+.dark {
+  --background: 0 0% 0%;
+  --foreground: 0 0% 98%;
+
+  --card: 0 0% 5%;
+  --card-foreground: 0 0% 98%;
+
+  --popover: 0 0% 5%;
+  --popover-foreground: 0 0% 98%;
+
+  --primary: 0 0% 98%;
+  --primary-foreground: 0 0% 9%;
+  --primary-glow: 0 0% 80%;
+
+  --secondary: 0 0% 14.9%;
+  --secondary-foreground: 0 0% 98%;
+
+  --muted: 0 0% 14.9%;
+  --muted-foreground: 0 0% 63.9%;
+
+  --accent: 0 0% 14.9%;
+  --accent-foreground: 0 0% 98%;
+
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+
+  --border: 0 0% 14.9%;
+  --input: 0 0% 14.9%;
+  --ring: 0 0% 83.1%;
+  
+  --success: 142 76% 36%;
+  --success-foreground: 0 0% 98%;
+  --warning: 38 92% 50%;
+  --warning-foreground: 20 14.3% 4.1%;
+  --info: 199 89% 48%;
+  --info-foreground: 0 0% 98%;
+}
+
+/* Apply theme colors */
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+}

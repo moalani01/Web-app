@@ -1,0 +1,124 @@
+<template>
+  <div class="dashboard-container">
+    <div class="dashboard-content">
+      <DashboardHeader :is-connected="isConnected" />
+
+      <div class="dashboard-grid">
+        <MessageTypeList
+          :message-types="MESSAGE_TYPES"
+          :selected-message-type="selectedMessageType"
+          @select-message-type="setSelectedMessageType"
+        />
+
+        <ConfigurationForm
+          :current-message-type="currentMessageType"
+          :form-data="formData"
+          :is-connected="isConnected"
+          @field-change="handleFieldChange"
+          @send-message="handleSendMessage"
+        />
+
+        <FeedbackDisplay
+          :feedback-messages="feedbackMessages"
+        />
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed } from 'vue'
+import { MESSAGE_TYPES } from '@/constants/messageTypes'
+import { CONFIG } from '@/config/constants'
+import type { FeedbackMessage } from '@/types/iot'
+import { createFeedbackMessage } from '@/utils/feedbackHelpers'
+
+// Components
+import DashboardHeader from './DashboardHeader.vue'
+import MessageTypeList from './MessageTypeList.vue'
+import ConfigurationForm from './ConfigurationForm.vue'
+import FeedbackDisplay from './FeedbackDisplay.vue'
+
+// Composables
+import { useLocalStorage } from '@/composables/useLocalStorage'
+import { useConnectionStatus } from '@/composables/useConnectionStatus'
+import { useFeedback } from '@/composables/useFeedback'
+import { useMessageSender } from '@/composables/useMessageSender'
+
+// State
+const selectedMessageType = ref<string>('')
+const { value: formData, setValue: setFormData } = useLocalStorage<Record<string, any>>(
+  CONFIG.STORAGE_KEYS.IOT_CONFIG_DATA, 
+  {}
+)
+
+// Composables
+const isConnected = useConnectionStatus()
+const { messages: feedbackMessages, addMessage: addFeedbackMessage } = useFeedback()
+
+// Computed
+const currentMessageType = computed(() => 
+  MESSAGE_TYPES.find(mt => mt.id === selectedMessageType.value)
+)
+
+// Methods
+const setSelectedMessageType = (id: string) => {
+  selectedMessageType.value = id
+}
+
+const handleFieldChange = (fieldName: string, value: any) => {
+  setFormData({
+    ...formData.value,
+    [fieldName]: value
+  })
+}
+
+const handleSuccessResponse = (response: any) => {
+  const feedbackMessage = createFeedbackMessage(
+    response.type,
+    response.message,
+    response.details
+  )
+  addFeedbackMessage(feedbackMessage)
+}
+
+const handleErrorResponse = (errorMessage: FeedbackMessage) => {
+  addFeedbackMessage(errorMessage)
+}
+
+// Message sender
+const { sendMessage } = useMessageSender(handleSuccessResponse, handleErrorResponse)
+
+const handleSendMessage = async () => {
+  if (!currentMessageType.value) return
+  await sendMessage(currentMessageType.value, formData.value)
+}
+</script>
+
+<style scoped>
+.dashboard-container {
+  min-height: 100vh;
+  background-color: hsl(var(--background));
+  padding: 1.5rem;
+}
+
+.dashboard-content {
+  max-width: 80rem;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+</style>

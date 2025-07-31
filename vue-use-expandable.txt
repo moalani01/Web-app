@@ -1,0 +1,45 @@
+import { ref } from 'vue'
+
+export interface UseExpandableReturn {
+  isExpanded: (id: string) => boolean
+  toggleExpansion: (id: string) => void
+  expandAll: (ids: string[]) => void
+  collapseAll: () => void
+  expandedCount: number
+}
+
+export function useExpandable(): UseExpandableReturn {
+  const expandedItems = ref<Set<string>>(new Set())
+
+  const isExpanded = (id: string): boolean => {
+    return expandedItems.value.has(id)
+  }
+
+  const toggleExpansion = (id: string): void => {
+    const newSet = new Set(expandedItems.value)
+    if (newSet.has(id)) {
+      newSet.delete(id)
+    } else {
+      newSet.add(id)
+    }
+    expandedItems.value = newSet
+  }
+
+  const expandAll = (ids: string[]): void => {
+    expandedItems.value = new Set([...expandedItems.value, ...ids])
+  }
+
+  const collapseAll = (): void => {
+    expandedItems.value = new Set()
+  }
+
+  return {
+    isExpanded,
+    toggleExpansion,
+    expandAll,
+    collapseAll,
+    get expandedCount() {
+      return expandedItems.value.size
+    }
+  }
+}

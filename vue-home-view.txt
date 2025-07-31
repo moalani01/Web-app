@@ -1,0 +1,7 @@
+<template>
+  <IoTDashboard />
+</template>
+
+<script setup lang="ts">
+import IoTDashboard from '@/components/dashboard/IoTDashboard.vue'
+</script>

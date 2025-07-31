@@ -1,0 +1,28 @@
+import { ref, onMounted, onUnmounted } from 'vue'
+import { CONFIG } from '@/config/constants'
+
+export function useConnectionStatus() {
+  const isConnected = ref<boolean>(false)
+  let connectionTimer: ReturnType<typeof setInterval> | null = null
+
+  const checkConnection = () => {
+    // Simulate connection status with configured success rate
+    isConnected.value = Math.random() > (1 - CONFIG.SIMULATION.CONNECTION_SUCCESS_RATE)
+  }
+
+  onMounted(() => {
+    // Set initial connection status
+    checkConnection()
+    
+    // Check connection periodically
+    connectionTimer = setInterval(checkConnection, CONFIG.SIMULATION.CONNECTION_CHECK_INTERVAL)
+  })
+
+  onUnmounted(() => {
+    if (connectionTimer) {
+      clearInterval(connectionTimer)
+    }
+  })
+
+  return isConnected
+}

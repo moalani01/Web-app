@@ -1,0 +1,15 @@
+<template>
+  <div class="scroll-area">
+    <div class="scroll-viewport">
+      <slot />
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+// No props needed for scroll area
+</script>
+
+<style scoped>
+/* Styles are in components.css */
+</style>

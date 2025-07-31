@@ -1,0 +1,35 @@
+import { ref, computed } from 'vue'
+import type { FeedbackMessage } from '@/types/iot'
+import { CONFIG } from '@/config/constants'
+import { limitFeedbackMessages } from '@/utils/feedbackHelpers'
+
+export interface UseFeedbackReturn {
+  messages: FeedbackMessage[]
+  addMessage: (message: FeedbackMessage) => void
+  clearMessages: () => void
+  messageCount: number
+}
+
+export function useFeedback(): UseFeedbackReturn {
+  const messages = ref<FeedbackMessage[]>([])
+
+  const addMessage = (message: FeedbackMessage): void => {
+    messages.value = limitFeedbackMessages(
+      [message, ...messages.value], 
+      CONFIG.SIMULATION.MAX_FEEDBACK_MESSAGES
+    )
+  }
+
+  const clearMessages = (): void => {
+    messages.value = []
+  }
+
+  const messageCount = computed(() => messages.value.length)
+
+  return {
+    messages: messages.value,
+    addMessage,
+    clearMessages,
+    messageCount: messageCount.value
+  }
+}

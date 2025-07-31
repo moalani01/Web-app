@@ -1,0 +1,101 @@
+<template>
+  <div class="message-type-item">
+    <BaseButton
+      :variant="isSelected ? 'default' : 'outline'"
+      class="message-type-button"
+      @click="$emit('select')"
+    >
+      <div class="button-content">
+        <div class="button-title">{{ messageType.name }}</div>
+        <div class="button-description" :class="{ expanded: isExpanded }">
+          {{ displayText }}
+        </div>
+      </div>
+    </BaseButton>
+    
+    <BaseButton
+      v-if="hasLongDescription"
+      variant="ghost"
+      size="sm"
+      class="expand-button"
+      @click="isExpanded = !isExpanded"
+    >
+      {{ isExpanded ? 'Show less' : 'Show more' }}
+    </BaseButton>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed } from 'vue'
+import type { MessageType } from '@/types/iot'
+import BaseButton from '@/components/common/BaseButton.vue'
+import { truncateText, shouldTruncate } from '@/utils/helpers'
+import { CONFIG } from '@/config/constants'
+
+const props = defineProps<{
+  messageType: MessageType
+  isSelected: boolean
+}>()
+
+defineEmits<{
+  select: []
+}>()
+
+const isExpanded = ref(false)
+
+const hasLongDescription = computed(() => 
+  shouldTruncate(props.messageType.description, CONFIG.TEXT.MAX_DESCRIPTION_LENGTH)
+)
+
+const displayText = computed(() => {
+  if (isExpanded.value || !hasLongDescription.value) {
+    return props.messageType.description
+  }
+  return truncateText(props.messageType.description, CONFIG.TEXT.MAX_DESCRIPTION_LENGTH)
+})
+</script>
+
+<style scoped>
+.message-type-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.message-type-button {
+  width: 100%;
+  justify-content: flex-start;
+  text-align: left;
+  height: auto;
+  padding: 1rem;
+}
+
+.button-content {
+  width: 100%;
+}
+
+.button-title {
+  font-weight: 500;
+}
+
+.button-description {
+  font-size: 0.875rem;
+  color: hsl(var(--muted-foreground));
+  margin-top: 0.25rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.button-description.expanded {
+  white-space: normal;
+}
+
+.expand-button {
+  margin-left: 1rem;
+  height: auto;
+  padding: 0.25rem;
+  font-size: 0.75rem;
+  color: hsl(var(--primary));
+}
+</style>

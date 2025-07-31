@@ -1,0 +1,133 @@
+<template>
+  <div class="dashboard-container">
+    <div class="dashboard-content">
+      <DashboardHeader :is-connected="isConnected" />
+
+      <div class="dashboard-grid">
+        <MessageTypeList
+          :message-types="MESSAGE_TYPES"
+          :selected-message-type="selectedMessageType"
+          @select-message-type="selectedMessageType = $event"
+        />
+
+        <ConfigurationForm
+          :current-message-type="currentMessageType"
+          :form-data="formData.value"
+          :is-connected="isConnected"
+          @field-change="handleFieldChange"
+          @send-message="handleSendMessage"
+        />
+
+        <FeedbackDisplay :feedback-messages="feedbackMessages" />
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed } from 'vue'
+import { MESSAGE_TYPES } from '@/constants/messageTypes'
+import { CONFIG } from '@/config/constants'
+import { useLocalStorage } from '@/composables/useLocalStorage'
+import { useConnectionStatus } from '@/composables/useConnectionStatus'
+import { useFeedback } from '@/composables/useFeedback'
+import { useToast } from '@/composables/useToast'
+import { validateFormData } from '@/utils/validation'
+import { simulateZmqCommunication } from '@/utils/messageSimulation'
+import { createFeedbackMessage, createErrorMessage } from '@/utils/feedbackHelpers'
+
+// Components
+import DashboardHeader from './DashboardHeader.vue'
+import MessageTypeList from './MessageTypeList.vue'
+import ConfigurationForm from './ConfigurationForm.vue'
+import FeedbackDisplay from './FeedbackDisplay.vue'
+
+// State
+const selectedMessageType = ref('')
+const formData = useLocalStorage<Record<string, any>>(CONFIG.STORAGE_KEYS.IOT_CONFIG_DATA, {})
+
+// Composables
+const isConnected = useConnectionStatus()
+const { messages: feedbackMessages, addMessage: addFeedbackMessage } = useFeedback()
+const { toast } = useToast()
+
+// Computed
+const currentMessageType = computed(() => 
+  MESSAGE_TYPES.find(mt => mt.id === selectedMessageType.value)
+)
+
+// Methods
+const handleFieldChange = (fieldName: string, value: any) => {
+  formData.setValue({
+    ...formData.value,
+    [fieldName]: value
+  })
+}
+
+const handleSendMessage = async () => {
+  if (!currentMessageType.value) return
+
+  const validation = validateFormData(currentMessageType.value.fields, formData.value)
+  
+  if (!validation.isValid) {
+    toast({
+      variant: 'destructive',
+      title: CONFIG.VALIDATION.REQUIRED_FIELD_ERROR,
+      description: `Please fill in: ${validation.missingFields.join(', ')}`
+    })
+    return
+  }
+
+  toast({
+    title: CONFIG.VALIDATION.SENDING_TITLE,
+    description: CONFIG.VALIDATION.SENDING_DESCRIPTION,
+  })
+
+  try {
+    const response = await simulateZmqCommunication(currentMessageType.value, formData.value)
+    const feedbackMessage = createFeedbackMessage(response.type, response.message, response.details)
+    addFeedbackMessage(feedbackMessage)
+
+    toast({
+      variant: response.type === 'error' ? 'destructive' : response.type,
+      title: response.type === 'success' ? 'Success' : response.type === 'error' ? 'Error' : 'Info',
+      description: response.message
+    })
+  } catch (error) {
+    const errorMessage = createErrorMessage('Communication failed', 'Unable to reach IoT device')
+    addFeedbackMessage(errorMessage)
+    
+    toast({
+      variant: 'destructive',
+      title: CONFIG.VALIDATION.COMMUNICATION_ERROR,
+      description: 'Failed to send configuration to device'
+    })
+  }
+}
+</script>
+
+<style scoped>
+.dashboard-container {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.dashboard-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+@media (min-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr 1.5fr 1fr;
+  }
+}
+</style>

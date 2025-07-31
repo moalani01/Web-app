@@ -1,0 +1,55 @@
+<template>
+  <BaseCard class="feedback-card">
+    <template #header>
+      <h2 class="card-title">Device Feedback</h2>
+    </template>
+    <template #content>
+      <BaseScrollArea>
+        <div v-if="feedbackMessages.length > 0" class="feedback-list">
+          <FeedbackCard
+            v-for="feedback in feedbackMessages"
+            :key="feedback.id"
+            :feedback="feedback"
+          />
+        </div>
+        <div v-else class="empty-state">
+          No feedback messages yet. Send a configuration to see device responses.
+        </div>
+      </BaseScrollArea>
+    </template>
+  </BaseCard>
+</template>
+
+<script setup lang="ts">
+import type { FeedbackMessage } from '@/types/iot'
+import BaseCard from '@/components/common/BaseCard.vue'
+import BaseScrollArea from '@/components/common/BaseScrollArea.vue'
+import FeedbackCard from './FeedbackCard.vue'
+
+defineProps<{
+  feedbackMessages: FeedbackMessage[]
+}>()
+</script>
+
+<style scoped>
+.feedback-card {
+  height: 600px;
+}
+
+.feedback-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-right: 1rem;
+}
+
+.empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: hsl(var(--muted-foreground));
+  text-align: center;
+  padding: 2rem;
+}
+</style>

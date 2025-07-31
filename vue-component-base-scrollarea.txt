@@ -1,0 +1,42 @@
+<template>
+  <div class="scroll-area">
+    <div class="scroll-viewport">
+      <slot />
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+// No props needed for scroll area
+</script>
+
+<style scoped>
+.scroll-area {
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+}
+
+.scroll-viewport {
+  height: 100%;
+  width: 100%;
+  border-radius: inherit;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--border)) transparent;
+}
+
+.scroll-viewport::-webkit-scrollbar {
+  width: 0.625rem;
+}
+
+.scroll-viewport::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scroll-viewport::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--border));
+  border-radius: 9999px;
+  border: 1px solid transparent;
+}
+</style>

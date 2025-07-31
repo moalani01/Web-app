@@ -1,0 +1,52 @@
+<template>
+  <router-view />
+  <ToastProvider />
+</template>
+
+<script setup lang="ts">
+import { onMounted } from 'vue'
+import { useTheme } from '@/composables/useTheme'
+import ToastProvider from '@/components/common/ToastProvider.vue'
+
+const { initTheme } = useTheme()
+
+onMounted(() => {
+  initTheme()
+})
+</script>
+
+<style>
+/* Global styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#app {
+  min-height: 100vh;
+  background-color: var(--background);
+  color: var(--foreground);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+/* Focus visible styles for accessibility */
+:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* Remove focus outline for mouse users */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+</style>

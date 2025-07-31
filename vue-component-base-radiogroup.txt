@@ -1,0 +1,86 @@
+<template>
+  <div class="radio-group" role="radiogroup">
+    <div v-for="option in options" :key="option" class="radio-item-container">
+      <button
+        :id="`radio-${option}`"
+        role="radio"
+        :aria-checked="modelValue === option"
+        class="radio-item"
+        :class="{ checked: modelValue === option }"
+        @click="selectOption(option)"
+      >
+        <span v-if="modelValue === option" class="radio-indicator" />
+      </button>
+      <label :for="`radio-${option}`" class="radio-label" @click="selectOption(option)">
+        {{ option }}
+      </label>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+interface Props {
+  modelValue?: string
+  options: string[]
+}
+
+defineProps<Props>()
+
+const emit = defineEmits<{
+  'update:modelValue': [value: string]
+}>()
+
+const selectOption = (option: string) => {
+  emit('update:modelValue', option)
+}
+</script>
+
+<style scoped>
+.radio-group {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.radio-item-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.radio-item {
+  aspect-ratio: 1;
+  height: 1rem;
+  width: 1rem;
+  border-radius: 9999px;
+  border: 1px solid hsl(var(--primary));
+  outline: none;
+  cursor: pointer;
+  position: relative;
+  background: transparent;
+  padding: 0;
+}
+
+.radio-item:focus-visible {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--ring));
+}
+
+.radio-indicator {
+  display: block;
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 9999px;
+  background-color: hsl(var(--primary));
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.radio-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+</style>

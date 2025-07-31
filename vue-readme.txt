@@ -152,3 +152,117 @@ The main differences are:
 ## Development
 
 The application is designed to work in an isolated network environment with minimal dependencies. All required functionality is implemented without external libraries beyond Vue core packages.
+
+Build Order - Step by Step
+Phase 1: Project Setup
+
+Create project directory and initialize:
+bashmkdir iot-orchestrator-vue
+cd iot-orchestrator-vue
+npm init -y
+
+package.json - Copy the package.json file and run:
+bashnpm install
+
+tsconfig.json
+tsconfig.app.json
+tsconfig.node.json
+vite.config.ts
+.gitignore
+index.html
+
+Phase 2: Core Structure
+
+src/main.ts
+src/env.d.ts
+src/App.vue (basic version first, without ErrorBoundary)
+
+Phase 3: Styles
+
+src/assets/styles/main.css
+src/assets/styles/themes.css
+src/assets/styles/components.css
+
+Phase 4: Types and Constants
+
+src/types/iot.ts
+src/config/constants.ts
+src/constants/messageTypes.ts
+
+Phase 5: Utilities
+
+src/utils/helpers.ts
+src/utils/validation.ts
+src/utils/feedbackHelpers.ts
+src/utils/messageSimulation.ts
+
+Phase 6: Basic Composables
+
+src/composables/useTheme.ts
+src/composables/useLocalStorage.ts
+src/composables/useTextUtils.ts
+src/composables/useDebounce.ts
+src/composables/useExpandable.ts
+
+Phase 7: Router and Views
+
+src/router/index.ts
+src/views/HomeView.vue
+src/views/NotFoundView.vue
+
+Phase 8: Base Components
+
+src/components/common/BaseButton.vue
+src/components/common/BaseCard.vue
+src/components/common/BaseInput.vue
+src/components/common/BaseScrollArea.vue
+src/components/common/BaseBadge.vue
+src/components/common/BaseSwitch.vue
+src/components/common/BaseSelect.vue
+src/components/common/BaseRadioGroup.vue
+src/components/common/LoadingSpinner.vue
+src/components/common/ThemeToggle.vue
+
+Phase 9: Advanced Composables
+
+src/composables/useConnectionStatus.ts
+src/composables/useFeedback.ts
+src/composables/useToast.ts
+src/composables/useMessageSender.ts
+
+Phase 10: Dashboard Components
+
+src/components/dashboard/DashboardHeader.vue
+src/components/dashboard/MessageTypeCard.vue
+src/components/dashboard/MessageTypeList.vue
+src/components/dashboard/FeedbackCard.vue
+src/components/dashboard/FeedbackDisplay.vue
+src/components/dashboard/ConfigurationForm.vue
+src/components/dashboard/IoTDashboard.vue
+
+Phase 11: Final Components
+
+src/components/common/ToastProvider.vue
+src/components/common/ErrorBoundary.vue
+
+Phase 12: Update App.vue
+
+Update src/App.vue to include ErrorBoundary and ToastProvider
+
+Phase 13: Public Assets
+
+public/robots.txt
+public/placeholder.svg
+
+Phase 14: Documentation
+
+README.md
+
+Testing After Each Phase
+After completing each phase, you can test:
+
+After Phase 2: Run npm run dev - should see a basic Vue app
+After Phase 3: Should see proper styling applied
+After Phase 7: Router should work with home and 404 pages
+After Phase 8: Test individual base components
+After Phase 10: Full application should be functional

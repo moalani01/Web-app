@@ -1,0 +1,260 @@
+<template>
+  <BaseCard class="configuration-card">
+    <template #header>
+      <h2 class="card-title">
+        {{ props.currentMessageType ? props.currentMessageType.name : 'Select Message Type' }}
+      </h2>
+    </template>
+    <template #content>
+      <div v-if="props.currentMessageType" class="form-container">
+        <BaseScrollArea class="form-content">
+          <div class="form-fields">
+            <div v-for="field in visibleFields" :key="field.name" class="field-container">
+              <div class="field-header" v-if="field.type !== 'table'">
+                <label class="field-label" :for="`field-${field.name}`">
+                  {{ field.label }}
+                  <span v-if="field.required" class="required-mark">*</span>
+                </label>
+                <BaseSwitch
+                  v-if="field.type === 'boolean'"
+                  :id="`field-${field.name}`"
+                  :modelValue="props.formData[field.name] ?? field.defaultValue"
+                  @update:modelValue="(value) => emit('field-change', field.name, value)"
+                />
+              </div>
+              
+              <!-- Table field with its own header -->
+              <div v-if="field.type === 'table'" class="table-field-container">
+                <label class="field-label table-label">
+                  {{ field.label }}
+                  <span v-if="field.required" class="required-mark">*</span>
+                </label>
+                <component
+                  :is="getFieldComponent(field)"
+                  :id="`field-${field.name}`"
+                  :modelValue="props.formData[field.name] ?? []"
+                  @update:modelValue="(value) => emit('field-change', field.name, value)"
+                  v-bind="getFieldProps(field)"
+                />
+              </div>
+              
+              <!-- Regular fields -->
+              <component
+                v-else-if="field.type !== 'boolean'"
+                :is="getFieldComponent(field)"
+                :id="`field-${field.name}`"
+                :modelValue="props.formData[field.name] ?? field.defaultValue"
+                @update:modelValue="(value) => emit('field-change', field.name, value)"
+                v-bind="getFieldProps(field)"
+              />
+            </div>
+          </div>
+        </BaseScrollArea>
+        
+        <div class="form-footer">
+          <BaseButton 
+            @click="handleSendClick"
+            :disabled="!props.isConnected"
+            class="send-button"
+          >
+            <svg class="icon-send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+            Send Configuration
+          </BaseButton>
+        </div>
+      </div>
+      <div v-else class="empty-state">
+        Please select a message type to configure
+      </div>
+    </template>
+  </BaseCard>
+</template>
+
+<script setup lang="ts">
+import { watch, computed } from 'vue'
+import type { MessageType, MessageField } from '@/types/iot'
+import BaseCard from '@/components/common/BaseCard.vue'
+import BaseButton from '@/components/common/BaseButton.vue'
+import BaseScrollArea from '@/components/common/BaseScrollArea.vue'
+import BaseInput from '@/components/common/BaseInput.vue'
+import BaseSelect from '@/components/common/BaseSelect.vue'
+import BaseSwitch from '@/components/common/BaseSwitch.vue'
+import BaseRadioGroup from '@/components/common/BaseRadioGroup.vue'
+import BaseTableInput from '@/components/common/BaseTableInput.vue'
+
+const props = defineProps<{
+  currentMessageType?: MessageType
+  formData: Record<string, any>
+  isConnected: boolean
+}>()
+
+const emit = defineEmits<{
+  'field-change': [fieldName: string, value: any]
+  'send-message': []
+}>()
+
+// Watcher for debugging
+watch(() => props.currentMessageType, (newValue, oldValue) => {
+  console.log('Step 4: ConfigurationForm received new messageType:', newValue?.name || 'undefined')
+  console.log('Step 4a: formData is:', props.formData)
+}, { immediate: true })
+
+// Handle send button click
+const handleSendClick = () => {
+  console.log('Step 1: Send Configuration button clicked')
+  try {
+    console.log('Step 1a: Current form data:', JSON.stringify(props.formData))
+    console.log('Step 1b: Is connected:', props.isConnected)
+    console.log('Step 1c: Current message type:', props.currentMessageType?.name)
+  } catch (e) {
+    console.log('Step 1 ERROR: Could not log props:', e)
+  }
+  emit('send-message')
+}
+
+// Check if a field should be visible based on dependencies
+const isFieldVisible = (field: MessageField): boolean => {
+  if (!field.dependsOn || field.showWhen === undefined) {
+    return true
+  }
+  
+  const dependentValue = props.formData[field.dependsOn]
+  
+  // Handle array of values for showWhen
+  if (Array.isArray(field.showWhen)) {
+    return field.showWhen.includes(dependentValue)
+  }
+  
+  return dependentValue === field.showWhen
+}
+
+// Get visible fields
+const visibleFields = computed(() => {
+  if (!props.currentMessageType) return []
+  return props.currentMessageType.fields.filter(field => isFieldVisible(field))
+})
+
+const getFieldComponent = (field: MessageField) => {
+  const componentMap = {
+    text: BaseInput,
+    number: BaseInput,
+    dropdown: BaseSelect,
+    boolean: BaseSwitch,
+    radio: BaseRadioGroup,
+    table: BaseTableInput
+  }
+  return componentMap[field.type] || BaseInput
+}
+
+const getFieldProps = (field: MessageField) => {
+  const baseProps: any = {
+    placeholder: `Enter ${field.label.toLowerCase()}`
+  }
+
+  if (field.type === 'number') {
+    return { ...baseProps, type: 'number' }
+  }
+  
+  if (field.type === 'dropdown' || field.type === 'radio') {
+    return { 
+      options: field.options || [],
+      placeholder: field.type === 'dropdown' ? `Select ${field.label.toLowerCase()}` : undefined
+    }
+  }
+  
+  if (field.type === 'table') {
+    return {
+      columns: field.columns || [],
+      rows: field.rows || 7
+    }
+  }
+  
+  return baseProps
+}
+</script>
+
+<style scoped>
+.configuration-card {
+  height: 600px;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.form-content {
+  flex: 1;
+  min-height: 0;
+}
+
+.form-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-right: 1rem;
+}
+
+.field-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.field-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.field-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.required-mark {
+  color: hsl(var(--destructive));
+  margin-left: 0.25rem;
+}
+
+.form-footer {
+  padding-top: 1rem;
+  margin-top: 1rem;
+  border-top: 1px solid hsl(var(--border));
+}
+
+.send-button {
+  width: 100%;
+}
+
+.icon-send {
+  width: 1rem;
+  height: 1rem;
+}
+
+.empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: hsl(var(--muted-foreground));
+}
+
+.table-field-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.table-label {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+</style>

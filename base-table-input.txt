@@ -1,0 +1,159 @@
+<template>
+  <div class="table-input-container">
+    <div class="table-wrapper">
+      <table class="table-input">
+        <thead>
+          <tr>
+            <th v-for="column in columns" :key="column.name" :style="{ width: column.width }">
+              {{ column.label }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(row, rowIndex) in tableData" :key="rowIndex">
+            <td v-for="column in columns" :key="`${rowIndex}-${column.name}`">
+              <BaseInput
+                v-if="column.type === 'text' || column.type === 'number'"
+                :type="column.type"
+                :modelValue="row[column.name]"
+                @update:modelValue="updateCell(rowIndex, column.name, $event)"
+                :placeholder="`Enter ${column.label.toLowerCase()}`"
+                class="table-cell-input"
+              />
+              <BaseSelect
+                v-else-if="column.type === 'dropdown'"
+                :modelValue="row[column.name]"
+                @update:modelValue="updateCell(rowIndex, column.name, $event)"
+                :options="column.options || []"
+                :placeholder="`Select ${column.label.toLowerCase()}`"
+                class="table-cell-select"
+              />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, watch } from 'vue'
+import type { TableColumn } from '@/types/iot'
+import BaseInput from './BaseInput.vue'
+import BaseSelect from './BaseSelect.vue'
+
+interface Props {
+  modelValue: Record<string, any>[]
+  columns: TableColumn[]
+  rows: number
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  rows: 7
+})
+
+const emit = defineEmits<{
+  'update:modelValue': [value: Record<string, any>[]]
+}>()
+
+// Initialize table data
+const initializeTableData = () => {
+  const data = []
+  for (let i = 0; i < props.rows; i++) {
+    const row: Record<string, any> = {}
+    props.columns.forEach(column => {
+      row[column.name] = props.modelValue?.[i]?.[column.name] || ''
+    })
+    data.push(row)
+  }
+  return data
+}
+
+const tableData = ref(initializeTableData())
+
+// Update cell value
+const updateCell = (rowIndex: number, columnName: string, value: any) => {
+  tableData.value[rowIndex][columnName] = value
+  emit('update:modelValue', [...tableData.value])
+}
+
+// Watch for external changes to modelValue
+watch(() => props.modelValue, (newValue) => {
+  if (newValue && Array.isArray(newValue)) {
+    tableData.value = initializeTableData()
+  }
+}, { deep: true })
+</script>
+
+<style scoped>
+.table-input-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table-wrapper {
+  min-width: 100%;
+  background-color: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.table-input {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table-input thead {
+  background-color: hsl(var(--muted) / 0.5);
+}
+
+.table-input th {
+  padding: 0.75rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: hsl(var(--foreground));
+  border-bottom: 1px solid hsl(var(--border));
+}
+
+.table-input td {
+  padding: 0.5rem;
+  border-bottom: 1px solid hsl(var(--border) / 0.5);
+}
+
+.table-input tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.table-input tbody tr:hover {
+  background-color: hsl(var(--muted) / 0.2);
+}
+
+.table-cell-input,
+.table-cell-select {
+  width: 100%;
+  height: 2rem;
+  font-size: 0.875rem;
+}
+
+/* Override default input/select styles for table cells */
+.table-cell-input:deep(.input),
+.table-cell-select:deep(.select) {
+  height: 2rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+}
+
+/* Responsive behavior */
+@media (max-width: 768px) {
+  .table-input {
+    font-size: 0.75rem;
+  }
+  
+  .table-input th,
+  .table-input td {
+    padding: 0.5rem 0.25rem;
+  }
+}
+</style>

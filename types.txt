@@ -1,0 +1,23 @@
+export interface TableColumn {
+  name: string
+  label: string
+  type: 'text' | 'number' | 'dropdown'
+  options?: { label: string; value: string }[]
+  width?: string
+}
+
+export interface MessageField {
+  name: string
+  label: string
+  type: 'text' | 'number' | 'dropdown' | 'boolean' | 'radio' | 'table'  // Add 'table'
+  required: boolean
+  placeholder?: string
+  options?: { label: string; value: string }[]
+  defaultValue?: any
+  // New properties for conditional rendering
+  dependsOn?: string  // Field name this field depends on
+  showWhen?: any      // Value(s) that trigger this field to show
+  // New properties for table type
+  columns?: TableColumn[]
+  rows?: number
+}

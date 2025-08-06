@@ -1,0 +1,143 @@
+{
+  id: 'sensor_config',
+  name: 'Sensor Configuration',
+  description: 'Configure sensor sampling rates, thresholds, and calibration parameters for accurate data collection.',
+  fields: [
+    {
+      name: 'selectedSensor',
+      label: 'Select Sensor',
+      type: 'dropdown',
+      required: true,
+      options: [
+        { label: 'Sensor 1 - Advanced Matrix Config', value: 'sensor1' },
+        { label: 'Sensor 2 - Basic Config', value: 'sensor2' },
+        { label: 'Sensor 3 - Temperature Config', value: 'sensor3' }
+      ],
+      defaultValue: 'sensor1'
+    },
+    // Sensor 1 specific fields
+    {
+      name: 'sensorMatrix',
+      label: 'Sensor Matrix Configuration',
+      type: 'table',
+      required: true,
+      dependsOn: 'selectedSensor',
+      showWhen: 'sensor1',
+      rows: 7,
+      columns: [
+        {
+          name: 'sensorId',
+          label: 'Sensor ID',
+          type: 'number',
+          width: '20%'
+        },
+        {
+          name: 'sensorMode',
+          label: 'Sensor Mode',
+          type: 'dropdown',
+          options: [
+            { label: 'Active', value: 'active' },
+            { label: 'Passive', value: 'passive' },
+            { label: 'Standby', value: 'standby' },
+            { label: 'Calibrate', value: 'calibrate' }
+          ],
+          width: '25%'
+        },
+        {
+          name: 'status',
+          label: 'Status',
+          type: 'dropdown',
+          options: [
+            { label: 'On', value: 'on' },
+            { label: 'Off', value: 'off' }
+          ],
+          width: '20%'
+        },
+        {
+          name: 'description',
+          label: 'Description',
+          type: 'text',
+          width: '35%'
+        }
+      ]
+    },
+    {
+      name: 'matrixSamplingRate',
+      label: 'Matrix Sampling Rate (Hz)',
+      type: 'number',
+      required: true,
+      dependsOn: 'selectedSensor',
+      showWhen: 'sensor1',
+      defaultValue: 100
+    },
+    // Sensor 2 specific fields
+    {
+      name: 'sensor2Id',
+      label: 'Sensor ID',
+      type: 'text',
+      required: true,
+      dependsOn: 'selectedSensor',
+      showWhen: 'sensor2',
+      placeholder: 'Enter sensor identifier'
+    },
+    {
+      name: 'sensor2SamplingRate',
+      label: 'Sampling Rate (Hz)',
+      type: 'number',
+      required: true,
+      dependsOn: 'selectedSensor',
+      showWhen: 'sensor2',
+      defaultValue: 10
+    },
+    {
+      name: 'sensor2Threshold',
+      label: 'Alert Threshold',
+      type: 'number',
+      required: false,
+      dependsOn: 'selectedSensor',
+      showWhen: 'sensor2',
+      defaultValue: 100
+    },
+    // Sensor 3 specific fields
+    {
+      name: 'temperatureUnit',
+      label: 'Temperature Unit',
+      type: 'radio',
+      required: true,
+      dependsOn: 'selectedSensor',
+      showWhen: 'sensor3',
+      options: [
+        { label: 'Celsius', value: 'celsius' },
+        { label: 'Fahrenheit', value: 'fahrenheit' },
+        { label: 'Kelvin', value: 'kelvin' }
+      ],
+      defaultValue: 'celsius'
+    },
+    {
+      name: 'tempMin',
+      label: 'Minimum Temperature',
+      type: 'number',
+      required: true,
+      dependsOn: 'selectedSensor',
+      showWhen: 'sensor3',
+      defaultValue: -50
+    },
+    {
+      name: 'tempMax',
+      label: 'Maximum Temperature',
+      type: 'number',
+      required: true,
+      dependsOn: 'selectedSensor',
+      showWhen: 'sensor3',
+      defaultValue: 150
+    },
+    // Common fields for all sensors
+    {
+      name: 'enableLogging',
+      label: 'Enable Data Logging',
+      type: 'boolean',
+      required: false,
+      defaultValue: true
+    }
+  ]
+}
